@@ -22,13 +22,15 @@ main =
 type alias Model =
   { topic : String
   , gifUrl : String
+  , loading : Bool
+  , message : String
   }
 
 
 init : String -> (Model, Cmd Msg)
 init topic =
-  ( Model topic "waiting.gif"
-  , getRandomGif topic
+  ( Model topic "" False ""
+  , getRandomGif topic -- Cmd.none
   )
 
 
@@ -39,20 +41,23 @@ init topic =
 type Msg
   = MorePlease
   | NewGif (Result Http.Error String)
+  | TopicChanged String
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
     MorePlease ->
-      (model, getRandomGif model.topic)
+      ({ model | loading = True }, getRandomGif model.topic)
 
     NewGif (Ok newUrl) ->
-      (Model model.topic newUrl, Cmd.none)
+      (Model model.topic newUrl False "Gif loaded", Cmd.none)
 
     NewGif (Err _) ->
-      (model, Cmd.none)
+      ({ model | loading = False, message = toString Err }, Cmd.none)
 
+    TopicChanged topic ->
+      ({ model | topic = topic }, Cmd.none)
 
 
 -- VIEW
@@ -61,13 +66,20 @@ update msg model =
 view : Model -> Html Msg
 view model =
   div []
-    [ h2 [] [text model.topic]
-    , button [ onClick MorePlease ] [ text "More Please!" ]
+    [ input [type_ "text", placeholder "topic", onInput TopicChanged, value model.topic ] []
+    , h2 [] [text model.topic]
+    , moreBtn model
     , br [] []
-    , img [src model.gifUrl] []
+    , if model.gifUrl /= "" then img [src model.gifUrl] [] else Html.p [] [text "gif"]
+    , Html.p [] [text model.message]
     ]
 
-
+moreBtn : Model -> Html Msg
+moreBtn model =
+  if (model.loading) then
+    Html.p [] [text "loading"]
+  else
+    button [ onClick MorePlease ] [ text "More Please!" ]
 
 -- SUBSCRIPTIONS
 

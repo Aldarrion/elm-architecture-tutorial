@@ -68,7 +68,11 @@ viewValidation : Model -> Html msg
 viewValidation model =
   let
     (color, message) =
-      if model.password == model.passwordAgain then
+      if String.isEmpty model.password then
+        ("balck", "Please specify password")
+      else if String.isEmpty model.passwordAgain then
+        ("balck", "Please retype your password")
+      else if model.password == model.passwordAgain then
         ("green", "OK")
       else
         ("red", "Passwords do not match!")

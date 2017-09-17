@@ -15,12 +15,14 @@ main =
 -- MODEL
 
 
-type alias Model = Int
+type alias Model = {i: Int}
 
+defaultCount : Int
+defaultCount = 10
 
 model : Model
 model =
-  0
+  {i = defaultCount}
 
 
 
@@ -30,26 +32,32 @@ model =
 type Msg
   = Increment
   | Decrement
+  | Reset
 
 
 update : Msg -> Model -> Model
 update msg model =
   case msg of
     Increment ->
-      model + 1
+      {model | i = model.i + 1}
 
     Decrement ->
-      model - 1
+      {model | i = model.i - 1}
+
+    Reset ->
+      {i = defaultCount}
 
 
 
 -- VIEW
 
 
+
 view : Model -> Html Msg
 view model =
   div []
-    [ button [ onClick Decrement ] [ text "-" ]
-    , div [] [ text (toString model) ]
-    , button [ onClick Increment ] [ text "+" ]
+    [ Html.p [] [ button [ onClick Reset ] [ text "Reset" ] ]
+    , Html.p [] [ button [ onClick Decrement ] [ text "-" ] ]
+    , div [] [ text ("I: " ++ (toString model.i)) ]
+    , Html.p [] [ button [ onClick Increment ] [ text "+" ] ]
     ]
